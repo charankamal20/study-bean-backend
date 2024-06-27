@@ -123,7 +123,7 @@ func Login(context *gin.Context) {
 	}
 
 	context.SetSameSite(http.SameSiteNoneMode)
-	context.SetCookie("Authorization", tokenString, 3600 * 24, "", "", false, true)
+	context.SetCookie("Authorization", tokenString, 3600 * 24, "", "", true, true)
 
 	context.JSON(http.StatusOK, gin.H{
 		"success": true,
