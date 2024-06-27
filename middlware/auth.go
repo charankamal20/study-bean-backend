@@ -48,7 +48,7 @@ func RequireAuth(context *gin.Context) {
 
 	// !TODO: Check is user exists
 
-	context.Set("username", claims["username"])
+	context.Set("email", claims["email"])
 
 	context.Next()
 }
