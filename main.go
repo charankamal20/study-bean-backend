@@ -7,9 +7,7 @@ import (
 	"study-bean/initializers"
 	"study-bean/middlware"
 	"study-bean/models"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -73,26 +71,57 @@ func getUsers(c *gin.Context) {
 
 // }
 
-func main() {
-    router := gin.Default()
+func CORSMiddleware() gin.HandlerFunc {
 
-	var origins string
+	var origin string
 	env := os.Getenv("ENVIRONMENT")
 
 	if env == "PRODUCTION" {
-		origins = "https://collab-study.vercel.app"
+		origin = "https://collab-study.vercel.app/"
 	} else {
-		origins = "http://localhost:3000"
+		origin = "http://localhost:3000"
 	}
 
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{origins},
-		AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Origin", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
-	}))
+	return func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
+}
+
+func main() {
+    router := gin.Default()
+	router.Use(CORSMiddleware())
+
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://localhost:3000"},
+	// 	AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH", "HEAD"},
+	// 	AllowHeaders:     []string{"Origin", "Authorization", "x-csrf-token"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// }))
+
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{origins},
+	// 	AllowHeaders:     []string{"Origin", "Authorization", "x-csrf-token"},
+	// 	AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH", "HEAD"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	AllowOriginFunc: func(origin string) bool {
+	// 		return origin == origins
+	// 	},
+	// 	MaxAge: 12 * time.Hour,
+	// }))
+
 
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)

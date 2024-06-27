@@ -13,9 +13,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func getUserByName(username string) (*models.User, error) {
+func getUserByName(email string) (*models.User, error) {
     for i, u := range models.Users {
-        if u.Username == username {
+        if u.Email == email {
             return &models.Users[i], nil
         }
     }
@@ -26,8 +26,9 @@ func getUserByName(username string) (*models.User, error) {
 func SignUp(context *gin.Context) {
 	// Get the email/pass off the body
 	var body struct {
-		Username string
+		Email string
 		Password string
+		Username string
 	}
 
 	if err := context.Bind(&body); err != nil {
@@ -48,7 +49,7 @@ func SignUp(context *gin.Context) {
 	}
 
 	// Create the user
-	user, err := getUserByName(body.Username)
+	user, _ := getUserByName(body.Email)
 	if user != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -59,6 +60,7 @@ func SignUp(context *gin.Context) {
 
 	var newUser models.User
 	newUser.Password = string(hash)
+	newUser.Email = body.Email
 	newUser.Username = body.Username
 
 	newUser.ID = uuid.New().String()
@@ -76,7 +78,7 @@ func SignUp(context *gin.Context) {
 func Login(context *gin.Context) {
 // Get the email/pass off the body
 	var body struct {
-		Username string
+		Email string
 		Password string
 	}
 
@@ -87,7 +89,7 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	user, err := getUserByName(body.Username)
+	user, err := getUserByName(body.Email)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -106,7 +108,7 @@ func Login(context *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": user.Username,
+		"email": user.Email,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
@@ -132,7 +134,7 @@ func Login(context *gin.Context) {
 
 func Validate(context *gin.Context) {
 
-	username, exists := context.Get("username")
+	email, exists := context.Get("email")
 
 	if !exists {
 		context.AbortWithStatus(http.StatusUnauthorized)
@@ -142,6 +144,6 @@ func Validate(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "I'm Logged In",
-		"username": username,
+		"email": email,
 	})
 }
