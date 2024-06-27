@@ -2,11 +2,14 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"study-bean/controllers"
 	"study-bean/initializers"
 	"study-bean/middlware"
 	"study-bean/models"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -73,9 +76,27 @@ func getUsers(c *gin.Context) {
 func main() {
     router := gin.Default()
 
+	var origins string
+	env := os.Getenv("ENVIRONMENT")
+
+	if env == "PRODUCTION" {
+		origins = "https://collab-study.vercel.app"
+	} else {
+		origins = "http://localhost:3000"
+	}
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{origins},
+		AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge: 12 * time.Hour,
+	}))
+
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)
-    router.GET("/validate", middlware.RequireAuth,controllers.Validate)
+    router.GET("/validate", middlware.RequireAuth, controllers.Validate)
 
 
     router.GET("/user", getUsers)
