@@ -1,12 +1,11 @@
 package main
 
 import (
-	"net/http"
+	"context"
 	"os"
 	"study-bean/controllers"
 	"study-bean/initializers"
-	"study-bean/middlware"
-	"study-bean/models"
+	"study-bean/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,24 +13,8 @@ import (
 
 func init() {
     initializers.LoadEnvVariables()
+	initializers.ConnectToDB()
 }
-
-func addUser(c *gin.Context) {
-	var newUser models.User
-
-	if err := c.BindJSON(&newUser); err != nil {
-		return
-	}
-
-	models.Users = append(models.Users, newUser)
-	c.JSON(http.StatusCreated, newUser)
-}
-
-// getAlbums responds with the list of all albums as JSON.
-func getUsers(c *gin.Context) {
-    c.IndentedJSON(http.StatusOK, models.Users)
-}
-
 
 
 // func getUser(context *gin.Context) {
@@ -98,9 +81,14 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-    router := gin.Default()
-	router.Use(CORSMiddleware())
+	defer func() {
+		if err := initializers.MongoClient.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
 
+	router := gin.Default()
+	router.Use(CORSMiddleware())
 	// router.Use(cors.New(cors.Config{
 	// 	AllowOrigins:     []string{"http://localhost:3000"},
 	// 	AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH", "HEAD"},
@@ -125,12 +113,9 @@ func main() {
 
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)
-    router.GET("/validate", middlware.RequireAuth, controllers.Validate)
-
-
-    router.GET("/user", getUsers)
-	router.POST("/user", addUser)
-    // router.GET("/user/:id", getUser)
+	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
+    router.GET("/user", controllers.GetAllUsers)
+	// router.GET("/user/:id", getUser)
     // router.PATCH("/user/:id", updatePassword)
     router.Run()
 }

@@ -1,26 +1,40 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 	"os"
+	"study-bean/database"
 	"study-bean/models"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func getUserByName(email string) (*models.User, error) {
-    for i, u := range models.Users {
-        if u.Email == email {
-            return &models.Users[i], nil
-        }
-    }
+// func getUserByName(email string) (*models.User, error) {
+//     for i, u := range models.Users {
+//         if u.Email == email {
+//             return &models.Users[i], nil
+//         }
+//     }
 
-    return nil, errors.New("user not found")
+//     return nil, errors.New("user not found")
+// }
+
+func GetAllUsers(context *gin.Context) {
+	users, err := database.FindAllUsers()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "Some Error Occured",
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"users": users,
+	})
 }
 
 func SignUp(context *gin.Context) {
@@ -38,18 +52,9 @@ func SignUp(context *gin.Context) {
 		return
 	}
 
-	// Hash the password
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to hash password",
-		})
-		return
-	}
 
 	// Create the user
-	user, _ := getUserByName(body.Email)
+	user, _ := database.FindUserFromDatabase(body.Email)
 	if user != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -58,14 +63,29 @@ func SignUp(context *gin.Context) {
 		return
 	}
 
-	var newUser models.User
-	newUser.Password = string(hash)
-	newUser.Email = body.Email
-	newUser.Username = body.Username
+	// Hash the password
+	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to hash password",
+		})
+		return
+	}
 
-	newUser.ID = uuid.New().String()
+	newUser := models.User{
+		Password: string(hash),
+		Email: body.Email,
+		Username: body.Username,
+	}
 
-	models.Users = append(models.Users, newUser)
+	err = database.AddUserToDatabase(newUser)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": "Please Try Again",
+		})
+		return
+	}
 
 	// Respond
 	context.JSON(http.StatusCreated, gin.H{
@@ -76,7 +96,7 @@ func SignUp(context *gin.Context) {
 
 
 func Login(context *gin.Context) {
-// Get the email/pass off the body
+	// Get the email/pass off the body
 	var body struct {
 		Email string
 		Password string
@@ -89,7 +109,7 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	user, err := getUserByName(body.Email)
+	user, err := database.FindUserFromDatabase(body.Email)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
