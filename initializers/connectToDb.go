@@ -33,12 +33,14 @@ func ConnectToDB() {
   MongoClient = client
 
   if err != nil {
-    fmt.Println(err)
+    log.Println(err)
+    return
   }
 
   // Send a ping to confirm a successful connection
   if err := client.Database("admin").RunCommand(context.TODO(), bson.M{"ping": 1}).Err(); err != nil {
-    fmt.Println(err)
+    log.Println(err)
+    return
   }
 
   UserCollection = client.Database("Users").Collection("user_data")

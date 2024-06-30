@@ -60,7 +60,7 @@ func CORSMiddleware() gin.HandlerFunc {
 	env := os.Getenv("ENVIRONMENT")
 
 	if env == "PRODUCTION" {
-		origin = "https://collab-study.vercel.app"
+		origin = "https://studybean.classikh.me"
 	} else {
 		origin = "http://localhost:3000"
 	}
