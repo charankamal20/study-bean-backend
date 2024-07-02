@@ -17,43 +17,6 @@ func init() {
 }
 
 
-// func getUser(context *gin.Context) {
-//     id := context.Param("id")
-
-//     user, err := getUserById(id)
-
-//     if err != nil {
-//         context.JSON(http.StatusNotFound, gin.H{"message": "User Not Found"})
-//         return
-//     }
-
-//     context.JSON(http.StatusOK, user)
-// }
-
-// func updatePassword(context *gin.Context) {
-//     id := context.Param("id")
-
-//     user, err := getUserById(id)
-
-//     if err != nil {
-//         context.JSON(http.StatusNotFound, gin.H{"message": "User Not Found"})
-//         return
-//     }
-
-//     var body struct {
-//         Password string `json:"password" binding:"required"`
-//     }
-
-//     if err := context.ShouldBindJSON(&body); err != nil {
-//         context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-//     }
-
-//     user.Password = body.Password
-//     context.JSON(http.StatusOK, user)
-
-// }
-
 func CORSMiddleware() gin.HandlerFunc {
 
 	var origin string
@@ -115,7 +78,8 @@ func main() {
     router.POST("/login", controllers.Login)
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
     router.GET("/user", controllers.GetAllUsers)
-	// router.GET("/user/:id", getUser)
-    // router.PATCH("/user/:id", updatePassword)
-    router.Run()
+
+	router.POST("/todo", middleware.RequireAuth, controllers.AddTodo)
+
+	router.Run()
 }

@@ -14,6 +14,7 @@ import (
 
 var UserCollection *mongo.Collection
 var MongoClient *mongo.Client
+var UserTodoCollection *mongo.Collection
 
 func ConnectToDB() {
 
@@ -44,6 +45,8 @@ func ConnectToDB() {
   }
 
   UserCollection = client.Database("Users").Collection("user_data")
+  UserTodoCollection = client.Database("Users").Collection("user_todos")
+
 
   fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 }

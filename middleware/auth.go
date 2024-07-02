@@ -4,23 +4,23 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"study-bean/tokens"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
-
 func RequireAuth(context *gin.Context) {
 	// Get Cookie
-	tokenString, err := context.Cookie("Authorization")
-
+	auth_token, err := context.Cookie("Authorization")
 	if err != nil {
 		context.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
+	tokenString := strings.Split(auth_token, " ")[1]
 	// Decode/ validate
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -40,15 +40,38 @@ func RequireAuth(context *gin.Context) {
 		context.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+	fmt.Println(claims)
 
-	if float64(time.Now().Unix()) > claims["exp"].(float64) {
+	expirationTime, ok := claims["exp"].(float64)
+	if !ok {
 		context.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	// !TODO: Check is user exists
+	expirationTimeInt := int64(expirationTime)
+
+	currentTime := time.Now().Unix()
+
+	if currentTime > expirationTimeInt {
+		refresh_token, err := context.Cookie("refresh_token")
+		fmt.Println("TOKEN_EXPIRED")
+		if err != nil {
+			context.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		auth_token, err = tokens.UpdateAuthTokenFromRefreshToken(claims["email"].(string), refresh_token)
+		if err != nil {
+			context.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		context.SetSameSite(http.SameSiteLaxMode)
+		context.SetCookie("Authorization", "Bearer "+auth_token, 3600*24, "", "", true, true)
+	}
 
 	context.Set("email", claims["email"])
+	context.Set("user_id", claims["user_id"])
 
 	context.Next()
 }
