@@ -73,13 +73,19 @@ func main() {
 	// 	MaxAge: 12 * time.Hour,
 	// }))
 
-
+	//* OPEN ROUTES
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)
-	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
     router.GET("/user", controllers.GetAllUsers)
 
+	//* TEST ROUTES
+	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
+
+	//* PRIVATE ROUTES
 	router.POST("/todo", middleware.RequireAuth, controllers.AddTodo)
+	router.GET("/todo", middleware.RequireAuth, controllers.GetAllTodos)
+	router.PUT("/todo/:todo_id", middleware.RequireAuth, controllers.UpdateTodo)
+	router.DELETE("/todo/:todo_id", middleware.RequireAuth, controllers.DeleteTodo)
 
 	router.Run()
 }
