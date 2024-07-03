@@ -10,12 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func init() {
-    initializers.LoadEnvVariables()
+	initializers.LoadEnvVariables()
 	initializers.ConnectToDB()
 }
-
 
 func CORSMiddleware() gin.HandlerFunc {
 
@@ -29,18 +27,18 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 
-        c.Next()
-    }
+		c.Next()
+	}
 }
 
 func main() {
@@ -74,9 +72,9 @@ func main() {
 	// }))
 
 	//* OPEN ROUTES
-    router.POST("/signup", controllers.SignUp)
-    router.POST("/login", controllers.Login)
-    router.GET("/user", controllers.GetAllUsers)
+	router.POST("/signup", controllers.SignUp)
+	router.POST("/login", controllers.Login)
+	router.GET("/user", controllers.GetAllUsers)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
@@ -86,6 +84,5 @@ func main() {
 	router.GET("/todo", middleware.RequireAuth, controllers.GetAllTodos)
 	router.PUT("/todo/:todo_id", middleware.RequireAuth, controllers.UpdateTodo)
 	router.DELETE("/todo/:todo_id", middleware.RequireAuth, controllers.DeleteTodo)
-
 	router.Run()
 }

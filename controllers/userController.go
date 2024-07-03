@@ -6,6 +6,7 @@ import (
 	"study-bean/models"
 	"study-bean/tokens"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -84,7 +85,7 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error": "Failed to generate a refresh token",
+			"error":   "Failed to generate a refresh token",
 		})
 		return
 	}
