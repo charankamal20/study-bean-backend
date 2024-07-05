@@ -7,13 +7,14 @@ import (
 
 // album represents data about a record album.
 type User struct {
-	ID           primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	User_ID      string             `json:"user_id" bson:"user_id,omitempty"`
-	Email        string             `json:"email" bson:"email,omitempty"`
-	Password     string             `json:"password" bson:"password,omitempty"`
-	Username     string             `json:"username" bson:"username,omitempty"`
-	RefreshToken string             `json:"refresh_token" bson:"refresh_token,omitempty"`
-	UpdatedAt    time.Time          `json:"updated_at" bson:"updated_at,omitempty"`
+	ID           primitive.ObjectID `json:"id" bson:"_id"`
+	User_ID      string             `json:"user_id" bson:"user_id"`
+	About 		 string				`json:"about" bson:"about"`
+	Email        string             `json:"email" bson:"email"`
+	Password     string             `json:"password" bson:"password"`
+	Username     string             `json:"username" bson:"username"`
+	RefreshToken string             `json:"refresh_token" bson:"refresh_token"`
+	UpdatedAt    time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 type Priority string
@@ -25,17 +26,17 @@ const (
 )
 
 type Todo struct {
-	ID            primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Todo          string             `json:"todo" bson:"todo,omitempty"`
-	IsCompleted   bool               `json:"isCompleted" bson:"isCompleted,omitempty"`
-	DateCreated   time.Time          `json:"dateCreated" bson:"dateCreated,omitempty"`
-	Priority      Priority           `json:"priority" bson:"priority,omitempty"`
-	TimeCompleted time.Time          `json:"timeCompleted" bson:"timeCompleted,omitempty"`
+	ID            primitive.ObjectID `json:"id" bson:"_id"`
+	Todo          string             `json:"todo" bson:"todo"`
+	IsCompleted   bool               `json:"isCompleted" bson:"isCompleted"`
+	DateCreated   time.Time          `json:"dateCreated" bson:"dateCreated"`
+	Priority      Priority           `json:"priority" bson:"priority"`
+	TimeCompleted time.Time          `json:"timeCompleted" bson:"timeCompleted"`
 }
 
 type UserTodo struct {
-	UserRefID string `json:"user_ref_id" bson:"user_ref_id,omitempty"`
-	Completed int    `json:"completed" bson:"completed,omitempty"`
-	Count     int    `json:"count" bson:"count,omitempty"`
-	Todos     []Todo `json:"todos" bson:"todos,omitempty"`
+	UserRefID string `json:"user_ref_id" bson:"user_ref_id"`
+	Completed int    `json:"completed" bson:"completed"`
+	Count     int    `json:"count" bson:"count"`
+	Todos     []Todo `json:"todos" bson:"todos"`
 }
