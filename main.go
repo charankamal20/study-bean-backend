@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"study-bean/controllers"
 	"study-bean/initializers"
@@ -14,6 +16,7 @@ import (
 func init() {
     initializers.LoadEnvVariables()
 	initializers.ConnectToDB()
+	initializers.NewAuth()
 }
 
 
@@ -72,11 +75,21 @@ func main() {
 	// 	},
 	// 	MaxAge: 12 * time.Hour,
 	// }))
+	htmlFormat := `<html><body>%v</body></html>`
+	router.GET("/", func(c *gin.Context) {
+		html := fmt.Sprintf(htmlFormat, `<a href="/github">Login through github</a>`)
+		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+	})
 
 	//* OPEN ROUTES
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)
-    router.GET("/user", controllers.GetAllUsers)
+	router.GET("/github", controllers.OAuthGithub)
+	router.GET("/callback", controllers.OAuthGithubCallback)
+
+	router.GET("/user", controllers.GetAllUsers)
+
+
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)

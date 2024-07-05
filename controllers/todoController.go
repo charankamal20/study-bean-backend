@@ -7,6 +7,7 @@ import (
 	"study-bean/database"
 	"study-bean/initializers"
 	"study-bean/models"
+	"study-bean/responses"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,7 @@ func AddTodo(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message": "Todo Missing",
+			"message": responses.TodoMissing,
 		})
 		return
 	}
@@ -73,14 +74,14 @@ func AddTodo(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"success": false,
-					"error":   "Failed to create todo",
+					"message":   responses.ErrorCreateTodo,
 				})
 				return
 			}
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
-				"error":   "Database error",
+				"message":   responses.DatabaseError,
 			})
 			return
 		}
@@ -101,7 +102,7 @@ func AddTodo(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
-				"error":   "Failed to update todo",
+				"message":   responses.ErrorUpdateTodo,
 			})
 			return
 		}
@@ -110,7 +111,7 @@ func AddTodo(c *gin.Context) {
 	// Respond
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
-		"message": "Todo Added",
+		"message": responses.SuccessAddTodo,
 	})
 }
 
@@ -126,7 +127,7 @@ func GetAllTodos(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNoContent, gin.H{
 			"success": false,
-			"message": "no todos found",
+			"message": responses.ErrorNoTodosFound,
 		})
 		return
 	}
@@ -149,7 +150,7 @@ func UpdateTodo(context *gin.Context) {
     if err != nil {
         context.JSON(http.StatusBadRequest, gin.H{
             "success": false,
-            "error":   "Invalid todo ID",
+            "message":   responses.InvalidTodoID,
         })
         return
     }
@@ -162,7 +163,7 @@ func UpdateTodo(context *gin.Context) {
     if err := context.ShouldBindJSON(&updateData); err != nil {
         context.JSON(http.StatusBadRequest, gin.H{
             "success": false,
-            "error":   "Invalid request body",
+            "message": responses.TryAgain,
         })
         return
     }
@@ -171,7 +172,7 @@ func UpdateTodo(context *gin.Context) {
     if err != nil {
         context.JSON(http.StatusInternalServerError, gin.H{
             "success": false,
-            "error":   "Failed to update todo",
+            "message":   responses.ErrorUpdateTodo,
         })
         return
     }
@@ -179,7 +180,7 @@ func UpdateTodo(context *gin.Context) {
     if result.MatchedCount == 0 {
         context.JSON(http.StatusNotFound, gin.H{
             "success": false,
-            "error":   "Todo not found",
+            "message":   responses.ErrorTodoNotFound,
         })
         return
     }
@@ -205,7 +206,7 @@ func DeleteTodo(context *gin.Context) {
     if err != nil {
         context.JSON(http.StatusBadRequest, gin.H{
             "success": false,
-            "error":   "Invalid todo ID",
+            "message":   responses.InvalidTodoID,
         })
         return
     }
@@ -214,7 +215,7 @@ func DeleteTodo(context *gin.Context) {
     if err != nil {
         context.JSON(http.StatusInternalServerError, gin.H{
             "success": false,
-            "error":   "Failed to update todo",
+            "message":   responses.ErrorUpdateTodo,
         })
         return
     }

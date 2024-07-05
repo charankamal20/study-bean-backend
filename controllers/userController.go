@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"study-bean/database"
 	"study-bean/models"
+	"study-bean/responses"
 	"study-bean/tokens"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -25,14 +27,15 @@ func GetAllUsers(context *gin.Context) {
 	users, err := database.FindAllUsers()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"error": "Some Error Occured",
+			"success" : true,
+			"message": responses.DatabaseError,
 		})
 		return
 	}
 
 	context.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"users":   users,
+		"data":   users,
 	})
 }
 
@@ -46,7 +49,8 @@ func SignUp(c *gin.Context) {
 
 	if err := c.Bind(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to parse body",
+			"message": responses.UserNotFound,
+			"success": false,
 		})
 		return
 	}
@@ -56,7 +60,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "User with this Email Already Exists",
+			"message":   responses.EmailTaken,
 		})
 		return
 	}
@@ -66,7 +70,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Username Taken",
+			"message":   responses.UsernameTaken,
 		})
 		return
 	}
@@ -75,7 +79,8 @@ func SignUp(c *gin.Context) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to hash password",
+			"success": false,
+			"message": responses.FailedToHash,
 		})
 		return
 	}
@@ -84,7 +89,7 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error": "Failed to generate a refresh token",
+			"message": responses.FailedRefreshToken,
 		})
 		return
 	}
@@ -103,7 +108,7 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Please Try Again",
+			"message":   responses.TryAgain,
 		})
 		return
 	}
@@ -124,7 +129,7 @@ func Login(c *gin.Context) {
 
 	if err := c.Bind(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to parse body",
+			"message": responses.TryAgain,
 		})
 		return
 	}
@@ -133,7 +138,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "User Does Not Exist",
+			"message":   responses.UserNotFound,
 		})
 		return
 	}
@@ -142,7 +147,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Invalid Credentials",
+			"message":   responses.InvalidCredentials,
 		})
 		return
 	}
@@ -151,7 +156,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Error Creating Token",
+			"message":   responses.ErrorTokenCreation,
 		})
 		return
 	}
@@ -160,7 +165,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Error Creating Refresh Token",
+			"message":   responses.ErrorRefreshTokenCreation,
 		})
 		return
 	}
@@ -169,7 +174,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"message": "Some Error Occured",
+			"message": responses.InternalServerError,
 		})
 		return
 	}
@@ -180,7 +185,7 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "Login Successful",
+		"message": responses.LoginSuccessful,
 	})
 }
 

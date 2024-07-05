@@ -13,8 +13,10 @@ import (
 )
 
 var UserCollection *mongo.Collection
-var MongoClient *mongo.Client
+var GroupCollection *mongo.Collection
 var UserTodoCollection *mongo.Collection
+
+var MongoClient *mongo.Client
 
 func ConnectToDB() {
 
@@ -29,6 +31,7 @@ func ConnectToDB() {
   // Use the SetServerAPIOptions() method to set the version of the Stable API on the client
   serverAPI := options.ServerAPI(options.ServerAPIVersion1)
   opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+
   // Create a new client and connect to the server
   client, err := mongo.Connect(context.TODO(), opts)
   MongoClient = client
@@ -46,7 +49,7 @@ func ConnectToDB() {
 
   UserCollection = client.Database("Users").Collection("user_data")
   UserTodoCollection = client.Database("Users").Collection("user_todos")
-
+  GroupCollection = client.Database("Groups").Collection("group_data")
 
   fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 }
