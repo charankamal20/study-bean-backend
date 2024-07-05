@@ -3,16 +3,8 @@ module study-bean
 go 1.22.3
 
 require (
-	github.com/gin-gonic/gin v1.10.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/gorilla/sessions v1.3.0
-	github.com/joho/godotenv v1.5.1
-	github.com/markbates/goth v1.80.0
-	go.mongodb.org/mongo-driver v1.16.0
-	golang.org/x/crypto v0.24.0
-)
-
-require (
+	cloud.google.com/go/compute v1.20.1 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/aidarkhanov/nanoid v1.0.8 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
