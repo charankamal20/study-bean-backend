@@ -1,8 +1,12 @@
 package initializers
 
 import (
+	"os"
+
 	"github.com/gorilla/sessions"
+	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
 )
 
 const (
@@ -19,5 +23,9 @@ func NewAuth() {
 	store.Options.HttpOnly = true
 	store.Options.Secure = IsProd
 
-	gothic.Store = store 
+	gothic.Store = store
+
+	goth.UseProviders(
+		google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http://localhost:8080/auth/google/callback"),
+	)
 }

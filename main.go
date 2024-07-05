@@ -77,7 +77,7 @@ func main() {
 	// }))
 	htmlFormat := `<html><body>%v</body></html>`
 	router.GET("/", func(c *gin.Context) {
-		html := fmt.Sprintf(htmlFormat, `<a href="/github">Login through github</a>`)
+		html := fmt.Sprintf(htmlFormat, `<a href="/auth/google">Login through Google</a>`)
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
 
@@ -85,8 +85,13 @@ func main() {
     router.POST("/signup", controllers.SignUp)
     router.POST("/login", controllers.Login)
 	router.GET("/github", controllers.OAuthGithub)
-	router.GET("/callback", controllers.OAuthGithubCallback)
 
+	router.GET("/auth/:provider/callback", controllers.GoogleAuthCallbackfunc)
+	router.GET("/auth/:provider", controllers.OAuthProvider)
+	router.GET("/logout/:provider", controllers.OAuthLogout)
+
+	router.GET("/callback", controllers.OAuthGithubCallback)
+	router.GET("/google", controllers.OAuthGoogle)
 	router.GET("/user", controllers.GetAllUsers)
 
 
