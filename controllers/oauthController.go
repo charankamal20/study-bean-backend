@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
-
 	"github.com/gin-gonic/gin"
-	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
-	"github.com/markbates/goth/providers/github"
-	"github.com/markbates/goth/providers/google"
 )
+
+
+type ContextKey string
+const ProviderKey ContextKey = "provider"
 
 func GoogleAuthCallbackfunc(c *gin.Context) {
 
 	provider := c.Param("provider")
-	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
+
+	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), ProviderKey, provider))
 	fmt.Println("Request", c.Request)
 	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
 	fmt.Println("USER", user)
@@ -27,19 +27,24 @@ func GoogleAuthCallbackfunc(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(user)
+	res, err := json.Marshal(user)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	jsonString := string(res)
 
-	c.Redirect(http.StatusAccepted, "http://localhost:8080/")
+	c.JSON(http.StatusAccepted, gin.H{
+		"success": true,
+		"user": jsonString,
+	})
 }
 
 func OAuthLogout(c *gin.Context) {
 
 	provider := c.Param("provider")
 
-	type ContextKey string
-	const ProviderKey ContextKey = "provider"
-
-	c.Request = c.Request.WithContext(context.WithValue(c, ProviderKey, provider))
+	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), ProviderKey, provider))
 	fmt.Println(c.Request)
 
 	gothic.Logout(c.Writer, c.Request)
@@ -66,8 +71,7 @@ func OAuthProvider(c *gin.Context) {
 	provider := c.Param("provider")
 	fmt.Println("provider", provider)
 
-	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
-	fmt.Println(c.Request)
+	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), ProviderKey, provider))
 
 	// try to get the user without re-authenticating
 	if gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request); err == nil {
@@ -77,46 +81,4 @@ func OAuthProvider(c *gin.Context) {
 		fmt.Println("HERE")
 		gothic.BeginAuthHandler(c.Writer, c.Request)
 	}
-}
-
-func OAuthGithub(c *gin.Context) {
-	githubProvider := github.New(os.Getenv("GITHUB_KEY"), os.Getenv("GITHUB_SECRET"), "http://localhost:8080/callback")
-	goth.UseProviders(githubProvider)
-
-	q := c.Request.URL.Query()
-	q.Add("provider", "github")
-	c.Request.URL.RawQuery = q.Encode()
-	gothic.BeginAuthHandler(c.Writer, c.Request)
-}
-
-func OAuthGoogle(c *gin.Context) {
-	google := google.New(os.Getenv("GOOGLE_KEY"), os.Getenv("GOOGLE_SECRET"), "http://127.0.0.1:8080/callback")
-	goth.UseProviders(google)
-
-	q := c.Request.URL.Query()
-	q.Add("provider", "google")
-	c.Request.URL.RawQuery = q.Encode()
-	gothic.BeginAuthHandler(c.Writer, c.Request)
-}
-
-func OAuthGithubCallback(c *gin.Context) {
-	q := c.Request.URL.Query()
-	q.Add("provider", "google")
-	c.Request.URL.RawQuery = q.Encode()
-	user, err := gothic.CompleteUserAuth(c.Writer, c.Request)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	res, err := json.Marshal(user)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	fmt.Println(user)
-	fmt.Println(res)
-	jsonString := string(res)
-	c.JSON(http.StatusOK, gin.H{
-		"user": jsonString,
-	})
 }
