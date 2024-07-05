@@ -11,6 +11,7 @@ import (
 )
 
 func init() {
+	println("hello@kanishk")
 	initializers.LoadEnvVariables()
 	initializers.ConnectToDB()
 }
