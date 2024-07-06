@@ -32,7 +32,7 @@ func FindUserByEmail(email string) (*models.User, error) {
 }
 
 func FindUserByUsername(username string) (*models.User, error) {
-	// create a filter to search for the email
+	// create a filter to search for the username
 	filter := bson.M{"username": username}
 
 
