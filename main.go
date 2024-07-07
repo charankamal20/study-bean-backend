@@ -88,6 +88,7 @@ func main() {
 	router.GET("/auth/:provider", controllers.OAuthProvider)
 	router.GET("/logout/:provider", controllers.OAuthLogout)
 	router.GET("/user", controllers.GetAllUsers)
+	router.GET("/user/:userID", controllers.GetSingleUser)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)

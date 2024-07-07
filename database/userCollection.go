@@ -34,8 +34,25 @@ func FindUserByEmail(email string) (*models.User, error) {
 func FindUserByUsername(username string) (*models.User, error) {
 	// create a filter to search for the username
 	filter := bson.M{"username": username}
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
 
+	// retrieving the first document that matches the filter
+	var result models.User
+	// check for errors in the finding
+	err := initializers.UserCollection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
 
+	fmt.Println(result)
+
+	return &result, nil
+}
+
+func FindUserByUserID(userID string) (*models.User, error) {
+	// create a filter to search for the username
+	filter := bson.M{"user_id": userID}
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 

@@ -59,7 +59,7 @@ func ToggleTodoState(todo_id primitive.ObjectID, isCompleted bool, user_id strin
 	filter := bson.M{"user_ref_id": user_id, "todos._id": todo_id}
 	update := bson.M{
 		"$set": bson.M{
-			"todos.$.isCompleted":     isCompleted,
+			"todos.$.isCompleted": isCompleted,
 		},
 	}
 

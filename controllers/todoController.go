@@ -122,7 +122,6 @@ func GetAllTodos(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	print("Here 0")
 	todos, err := database.GetUserTodos(user_id.(string))
 	if err != nil {
 		c.JSON(http.StatusNoContent, gin.H{
