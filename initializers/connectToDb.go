@@ -36,20 +36,20 @@ func ConnectToDB() {
   client, err := mongo.Connect(context.TODO(), opts)
   MongoClient = client
 
-  if err != nil {
-    log.Println(err)
-    return
-  }
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-  // Send a ping to confirm a successful connection
-  if err := client.Database("admin").RunCommand(context.TODO(), bson.M{"ping": 1}).Err(); err != nil {
-    log.Println(err)
-    return
-  }
+	// Send a ping to confirm a successful connection
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.M{"ping": 1}).Err(); err != nil {
+		log.Println(err)
+		return
+	}
 
   UserCollection = client.Database("Users").Collection("user_data")
   UserTodoCollection = client.Database("Users").Collection("user_todos")
   GroupCollection = client.Database("Groups").Collection("group_data")
 
-  fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 }

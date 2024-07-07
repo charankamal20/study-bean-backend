@@ -27,7 +27,7 @@ func GetAllUsers(context *gin.Context) {
 	users, err := database.FindAllUsers()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"success" : true,
+			"success": true,
 			"message": responses.DatabaseError,
 		})
 		return
@@ -35,7 +35,24 @@ func GetAllUsers(context *gin.Context) {
 
 	context.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":   users,
+		"data":    users,
+	})
+}
+
+func GetSingleUser(context *gin.Context) {
+	SingleUserIDParam := context.Param("userID")
+	user, err := database.FindUserByUserID(SingleUserIDParam)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": true,
+			"message": responses.DatabaseError,
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
 	})
 }
 
@@ -60,7 +77,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.EmailTaken,
+			"message": responses.EmailTaken,
 		})
 		return
 	}
@@ -70,7 +87,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.UsernameTaken,
+			"message": responses.UsernameTaken,
 		})
 		return
 	}
@@ -108,7 +125,7 @@ func SignUp(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.TryAgain,
+			"message": responses.TryAgain,
 		})
 		return
 	}
@@ -138,7 +155,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.UserNotFound,
+			"message": responses.UserNotFound,
 		})
 		return
 	}
@@ -147,7 +164,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.InvalidCredentials,
+			"message": responses.InvalidCredentials,
 		})
 		return
 	}
@@ -156,7 +173,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.ErrorTokenCreation,
+			"message": responses.ErrorTokenCreation,
 		})
 		return
 	}
@@ -165,7 +182,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.ErrorRefreshTokenCreation,
+			"message": responses.ErrorRefreshTokenCreation,
 		})
 		return
 	}
@@ -185,6 +202,7 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": responses.LoginSuccessful,
+		"user":    user,
 	})
 }
 
