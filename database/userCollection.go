@@ -9,6 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func FindUserByEmail(email string) (*models.User, error) {
@@ -127,4 +128,31 @@ func UpdateUserByKey[T any](_id primitive.ObjectID, key string, newValue T) erro
 	}
 
 	return nil
+}
+
+
+func CheckUserExistInGroup(user_id string, guid string) (*models.User, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	defer cancel()
+
+	filter := bson.M{
+		"user_id": user_id,
+		"groups": bson.M{
+			"$elemMatch": bson.M{"$eq": guid},
+		},
+	}
+
+	var user models.User
+
+	err := initializers.UserCollection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Handle the case when no documents match the filter
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }

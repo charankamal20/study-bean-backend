@@ -12,13 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func init() {
-    initializers.LoadEnvVariables()
+	initializers.LoadEnvVariables()
 	initializers.ConnectToDB()
 	initializers.NewAuth()
 }
-
 
 func CORSMiddleware() gin.HandlerFunc {
 
@@ -32,18 +30,18 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 
-        c.Next()
-    }
+		c.Next()
+	}
 }
 
 func main() {
@@ -81,16 +79,19 @@ func main() {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
 
-	//* OPEN ROUTES
-    router.POST("/signup", controllers.SignUp)
-    router.POST("/login", controllers.Login)
-
+	//* AUTH ROUTES
+	router.POST("/signup", controllers.SignUp)
+	router.POST("/login", controllers.Login)
 	router.GET("/auth/:provider/callback", controllers.GoogleAuthCallbackfunc)
 	router.GET("/auth/:provider", controllers.OAuthProvider)
 	router.GET("/logout/:provider", controllers.OAuthLogout)
+
+	//* OPEN ROUTES
 	router.GET("/user", controllers.GetAllUsers)
 
-
+	//* GROUP ROUTES
+	router.POST("/group/user/add", middleware.RequireAuth, controllers.AddUserToGroup)
+	router.POST("/user/group", middleware.RequireAuth, controllers.CreateGroup)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
