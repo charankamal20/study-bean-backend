@@ -74,14 +74,14 @@ func AddTodo(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"success": false,
-					"message":   responses.ErrorCreateTodo,
+					"message": responses.ErrorCreateTodo,
 				})
 				return
 			}
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
-				"message":   responses.DatabaseError,
+				"message": responses.DatabaseError,
 			})
 			return
 		}
@@ -102,7 +102,7 @@ func AddTodo(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"success": false,
-				"message":   responses.ErrorUpdateTodo,
+				"message": responses.ErrorUpdateTodo,
 			})
 			return
 		}
@@ -122,7 +122,6 @@ func GetAllTodos(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
 	todos, err := database.GetUserTodos(user_id.(string))
 	if err != nil {
 		c.JSON(http.StatusNoContent, gin.H{
@@ -132,96 +131,144 @@ func GetAllTodos(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusFound, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    todos,
 	})
 }
 
+func ToggleTodoState(context *gin.Context) {
+	user_id, exists := context.Get("user_id")
+	if !exists {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	todoIDFromParam := context.Param("todo_id")
+	todoID, err := primitive.ObjectIDFromHex(todoIDFromParam)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.InvalidTodoID,
+		})
+		return
+	}
+	var toggledTodo struct {
+		IsCompleted bool `json:"isCompleted"`
+	}
+	if err := context.ShouldBindJSON(&toggledTodo); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.TryAgain,
+		})
+		return
+	}
+
+	result, err := database.ToggleTodoState(todoID, toggledTodo.IsCompleted, user_id.(string))
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": responses.ErrorUpdateTodo,
+		})
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		context.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": responses.ErrorTodoNotFound,
+		})
+		return
+	}
+	fmt.Println(result)
+	// Respond
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+	})
+}
+
 func UpdateTodo(context *gin.Context) {
-    user_id, exists := context.Get("user_id")
-    if !exists {
-        context.AbortWithStatus(http.StatusUnauthorized)
-        return
-    }
+	user_id, exists := context.Get("user_id")
+	if !exists {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
-    todoIDParam := context.Param("todo_id")
-    todoID, err := primitive.ObjectIDFromHex(todoIDParam)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{
-            "success": false,
-            "message":   responses.InvalidTodoID,
-        })
-        return
-    }
+	todoIDParam := context.Param("todo_id")
+	todoID, err := primitive.ObjectIDFromHex(todoIDParam)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.InvalidTodoID,
+		})
+		return
+	}
 
-    var updateData struct {
-        Todo          string             `json:"todo"`
-        Priority      models.Priority    `json:"priority"`
-    }
+	var updateData struct {
+		Todo     string          `json:"todo"`
+		Priority models.Priority `json:"priority"`
+	}
 
-    if err := context.ShouldBindJSON(&updateData); err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{
-            "success": false,
-            "message": responses.TryAgain,
-        })
-        return
-    }
+	if err := context.ShouldBindJSON(&updateData); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.TryAgain,
+		})
+		return
+	}
 
 	result, err := database.UpdateTodo(todoID, updateData.Priority, updateData.Todo, user_id.(string))
-    if err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H{
-            "success": false,
-            "message":   responses.ErrorUpdateTodo,
-        })
-        return
-    }
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": responses.ErrorUpdateTodo,
+		})
+		return
+	}
 
-    if result.MatchedCount == 0 {
-        context.JSON(http.StatusNotFound, gin.H{
-            "success": false,
-            "message":   responses.ErrorTodoNotFound,
-        })
-        return
-    }
+	if result.MatchedCount == 0 {
+		context.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": responses.ErrorTodoNotFound,
+		})
+		return
+	}
 
 	fmt.Println(result)
 
-    // Respond
-    context.JSON(http.StatusOK, gin.H{
-        "success": true,
-    })
+	// Respond
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+	})
 }
 
-
 func DeleteTodo(context *gin.Context) {
-    user_id, exists := context.Get("user_id")
-    if !exists {
-        context.AbortWithStatus(http.StatusUnauthorized)
-        return
-    }
+	user_id, exists := context.Get("user_id")
+	if !exists {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 
-    todoIDParam := context.Param("todo_id")
-    todoID, err := primitive.ObjectIDFromHex(todoIDParam)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{
-            "success": false,
-            "message":   responses.InvalidTodoID,
-        })
-        return
-    }
+	todoIDParam := context.Param("todo_id")
+	todoID, err := primitive.ObjectIDFromHex(todoIDParam)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.InvalidTodoID,
+		})
+		return
+	}
 
 	_, err = database.DeleteTodo(todoID, user_id.(string))
-    if err != nil {
-        context.JSON(http.StatusInternalServerError, gin.H{
-            "success": false,
-            "message":   responses.ErrorUpdateTodo,
-        })
-        return
-    }
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": responses.ErrorUpdateTodo,
+		})
+		return
+	}
 
 	// Respond
-    context.JSON(http.StatusOK, gin.H{
-        "success": true,
-    })
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+	})
 }
