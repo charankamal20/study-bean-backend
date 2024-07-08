@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-//! BUG : if user is deleted and that token is used to send a request. the request is accepted.
+// ! BUG : if user is deleted and that token is used to send a request. the request is accepted.
 func CreateGroup(c *gin.Context) {
 
 	// Get User/Admin data
@@ -26,7 +26,7 @@ func CreateGroup(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("USER ID",user_id.(string))
+	fmt.Println("USER ID", user_id.(string))
 
 	// Get group data from req body
 	var body struct {
@@ -41,8 +41,7 @@ func CreateGroup(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("BODY",body)
-
+	fmt.Println("BODY", body)
 
 	// Create a new Group instance
 	var newGroup models.Group
@@ -58,8 +57,7 @@ func CreateGroup(c *gin.Context) {
 	newGroup.Banned = []string{}
 	newGroup.GroupID = newGroup.ID.Hex()
 
-	fmt.Println("NEW GROUP",newGroup)
-
+	fmt.Println("NEW GROUP", newGroup)
 
 	var wg sync.WaitGroup
 	errChan := make(chan error, 2)
@@ -74,7 +72,7 @@ func CreateGroup(c *gin.Context) {
 	}()
 
 	wg.Add(1)
-	go func ()  {
+	go func() {
 		defer wg.Done()
 		err := database.CreateGroup(&newGroup)
 		if err != nil {
@@ -113,7 +111,7 @@ func AddUserToGroup(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println("USER ID",user_id.(string))
+	fmt.Println("USER ID", user_id.(string))
 
 	// Get Group ID from query params
 	guid := c.Query("guid")
@@ -151,5 +149,68 @@ func AddUserToGroup(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
 		"message": responses.UserAddedToGroup,
+	})
+}
+
+func AddGroupTodo(c *gin.Context) {
+
+	// Get User id and email from middleware
+	user_id, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.TryAgain,
+		})
+		return
+	}
+
+	guid := c.Param("guid")
+	fmt.Println("provider", guid)
+	if guid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.GroupIDMissing,
+		})
+		return
+	}
+
+	var body struct {
+		Todo     string
+		Priority models.Priority
+	}
+
+	err := c.BindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": responses.TodoMissing,
+		})
+		return
+	}
+
+	var groupTodo models.GTodo
+
+	groupTodo.Creator = user_id.(string)
+	groupTodo.DateCreated = time.Now()
+	groupTodo.ID = primitive.NewObjectID()
+	groupTodo.IsCompleted = false
+	groupTodo.Priority = body.Priority
+	groupTodo.TodoBody = body.Todo
+
+	err = database.AddGroupTodo(groupTodo, guid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": responses.ErrorCreateTodo,
+			"error": err,
+		})
+		return
+	}
+
+	// Respond
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": responses.SuccessAddTodo,
+		"todo": groupTodo,
 	})
 }

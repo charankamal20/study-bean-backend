@@ -43,7 +43,7 @@ func AddTodo(c *gin.Context) {
 	// Create a new Todo item
 	newTodo := models.Todo{
 		ID:            primitive.NewObjectID(),
-		Todo:          body.Todo,
+		TodoBody:      body.Todo,
 		Priority:      body.Priority,
 		IsCompleted:   false,
 		DateCreated:   current_time,

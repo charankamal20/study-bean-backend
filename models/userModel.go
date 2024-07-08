@@ -28,7 +28,7 @@ const (
 
 type Todo struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	Todo          string             `json:"todo" bson:"todo"`
+	TodoBody      string             `json:"todo_body" bson:"todo_body"`
 	IsCompleted   bool               `json:"isCompleted" bson:"isCompleted"`
 	DateCreated   time.Time          `json:"dateCreated" bson:"dateCreated"`
 	Priority      Priority           `json:"priority" bson:"priority"`

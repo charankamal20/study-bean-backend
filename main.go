@@ -93,6 +93,7 @@ func main() {
 	//* GROUP ROUTES
 	router.POST("/group/user/add", middleware.RequireAuth, controllers.AddUserToGroup)
 	router.POST("/user/group", middleware.RequireAuth, controllers.CreateGroup)
+	router.POST("/group/:guid/todo", middleware.RequireAuth, controllers.AddGroupTodo)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
