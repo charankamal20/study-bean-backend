@@ -100,3 +100,4 @@ func CreateGroup(group *models.Group) error {
 
 	return nil
 }
+

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -57,4 +58,74 @@ func AddGroupTodo(groupTodo models.GTodo, guid string) error {
 		}
 	}
 	return nil
+}
+
+func UpdateGroupTodo(todo_id primitive.ObjectID, priority models.Priority, todo, guid string) (*mongo.UpdateResult, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	filter := bson.M{"group_ref_id": guid, "todos.todo._id": todo_id}
+	update := bson.M{
+		"$set": bson.M{
+			"todos.$.todo.todo_body": todo,
+			"todos.$.todo.priority":  priority,
+		},
+	}
+	fmt.Println(filter)
+
+	result, err := initializers.GroupTodoCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func ToggleGroupTodo(todo_id primitive.ObjectID, isCompleted bool, guid string) (*mongo.UpdateResult, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	filter := bson.M{"group_ref_id": guid, "todos.todo._id": todo_id}
+	update := bson.M{
+		"$set": bson.M{
+			"todos.$.todo.isCompleted": isCompleted,
+		},
+	}
+	result, err := initializers.GroupTodoCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func DeleteGroupTodo(todoId primitive.ObjectID, guid string) (*mongo.UpdateResult, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	// Define the filter to match the user and the todo item
+	filter := bson.M{"group_ref_id": guid}
+
+	// Define the update operation to pull the specific todo item from the todos array
+	update := bson.M{
+		"$pull": bson.M{
+			"todos": bson.M{"todo._id": todoId},
+		},
+		"$inc": bson.M{
+			"todo_count": -1,
+		},
+	}
+
+	// Perform the update operation
+	result, err := initializers.GroupTodoCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

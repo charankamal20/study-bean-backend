@@ -19,7 +19,7 @@ type Group struct {
 }
 
 type GTodo struct {
-	Todo    `json:"todo" bson:"todo"`
+	Todo
 	Creator string `json:"creator" bson:"creator"`
 }
 
