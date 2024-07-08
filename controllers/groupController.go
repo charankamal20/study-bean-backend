@@ -6,11 +6,14 @@ import (
 	"study-bean/database"
 	"study-bean/models"
 	"study-bean/responses"
+	"sync"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+//! BUG : if user is deleted and that token is used to send a request. the request is accepted.
 func CreateGroup(c *gin.Context) {
 
 	// Get User/Admin data
@@ -50,18 +53,46 @@ func CreateGroup(c *gin.Context) {
 	newGroup.GroupName = body.GroupName
 	newGroup.GroupPhoto = body.GroupPhoto
 	newGroup.UpdatedAt = time.Now()
+	newGroup.NumberOfMembers = 1
 	newGroup.Members = []string{user_id.(string)}
+	newGroup.Banned = []string{}
 	newGroup.GroupID = newGroup.ID.Hex()
+
 	fmt.Println("NEW GROUP",newGroup)
 
-	// Add this group to database
-	err := database.CreateGroup(&newGroup)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": responses.InternalServerError,
-		})
-		return
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, 2)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := database.AddGroupInUser(newGroup.GroupID, user_id.(string))
+		if err != nil {
+			errChan <- err
+		}
+	}()
+
+	wg.Add(1)
+	go func ()  {
+		defer wg.Done()
+		err := database.CreateGroup(&newGroup)
+		if err != nil {
+			errChan <- err
+		}
+	}()
+
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": responses.InternalServerError,
+			})
+			return
+		}
 	}
 
 	// return success true response

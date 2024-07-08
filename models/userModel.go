@@ -7,15 +7,15 @@ import (
 
 // album represents data about a record album.
 type User struct {
-	ID           primitive.ObjectID   `json:"id" bson:"_id"`
-	User_ID      string               `json:"user_id" bson:"user_id"`
-	About        string               `json:"about" bson:"about"`
-	Email        string               `json:"email" bson:"email"`
-	Password     string               `json:"password" bson:"password"`
-	Username     string               `json:"username" bson:"username"`
-	RefreshToken string               `json:"refresh_token" bson:"refresh_token"`
-	UpdatedAt    time.Time            `json:"updated_at" bson:"updated_at"`
-	Groups       []primitive.ObjectID `json:"groups" bson:"groups"`
+	ID           primitive.ObjectID `json:"id" bson:"_id"`
+	User_ID      string             `json:"user_id" bson:"user_id"`
+	About        string             `json:"about" bson:"about"`
+	Email        string             `json:"email" bson:"email"`
+	Password     string             `json:"password" bson:"password"`
+	Username     string             `json:"username" bson:"username"`
+	RefreshToken string             `json:"refresh_token" bson:"refresh_token"`
+	UpdatedAt    time.Time          `json:"updated_at" bson:"updated_at"`
+	Groups       []string           `json:"groups" bson:"groups"`
 }
 
 type Priority string

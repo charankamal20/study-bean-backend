@@ -120,6 +120,7 @@ func SignUp(c *gin.Context) {
 	newUser.User_ID = newUser.ID.Hex()
 	newUser.RefreshToken = refreshTokenString
 	newUser.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	newUser.Groups = []string{}
 
 	err = database.AddUserToDatabase(newUser)
 	if err != nil {

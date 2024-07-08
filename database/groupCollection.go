@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"study-bean/initializers"
 	"study-bean/models"
 	"sync"
@@ -24,14 +23,14 @@ func AddUserToGroup(user_id string, guid string) error {
 	updateGroup := bson.M{
 		"$addToSet": bson.M{"members": user_id},
 		"$inc":      bson.M{"number_of_members": 1},
-		"$set":      bson.M{"updated_at": time.Now().Unix()},
+		"$set":      bson.M{"updated_at": time.Now()},
 	}
 
 	// Define filter and update for the user
 	filterUser := bson.M{"user_id": user_id}
 	updateUser := bson.M{
 		"$addToSet": bson.M{"groups": guid},
-		"$set":      bson.M{"updated_at": time.Now().Unix()},
+		"$set":      bson.M{"updated_at": time.Now()},
 	}
 
 	// Update group
@@ -94,12 +93,10 @@ func CreateGroup(group *models.Group) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	result, err := initializers.GroupCollection.InsertOne(ctx, group)
+	_, err := initializers.GroupCollection.InsertOne(ctx, group)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(result)
 
 	return nil
 }
