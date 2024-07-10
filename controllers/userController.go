@@ -134,7 +134,7 @@ func SignUp(c *gin.Context) {
 	// Respond
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
-		"user":    newUser,
+		"message": "Signed In successfully",
 	})
 }
 
@@ -170,7 +170,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := tokens.GenerateNewAuthToken(user.Email, user.User_ID)
+	tokenString, err := tokens.GenerateNewAuthToken(user.Email, user.User_ID, user.Username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -197,13 +197,27 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	userRes := struct {
+		Username string   `json:"username"`
+		UserID   string   `json:"user_id"`
+		About    string   `json:"about"`
+		Email    string   `json:"email"`
+		Groups   []string `json:"groups"`
+	}{
+		Username: user.Username,
+		UserID:   user.User_ID,
+		About:    user.About,
+		Email:    user.Email,
+		Groups:   user.Groups,
+	}
+
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", "Bearer "+tokenString, 3600*24, "", "", true, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": responses.LoginSuccessful,
-		"user":    user,
+		"user":    userRes,
 	})
 }
 
@@ -220,5 +234,15 @@ func Validate(context *gin.Context) {
 		"success": true,
 		"message": "I'm Logged In",
 		"email":   email,
+	})
+}
+
+func Logout(c *gin.Context) {
+	// Remove the Authorization cookie
+	c.SetCookie("Authorization", "", -1, "", "", true, true)
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Logout successful",
 	})
 }

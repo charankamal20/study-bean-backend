@@ -85,6 +85,7 @@ func main() {
 	router.GET("/auth/:provider/callback", controllers.GoogleAuthCallbackfunc)
 	router.GET("/auth/:provider", controllers.OAuthProvider)
 	router.GET("/logout/:provider", controllers.OAuthLogout)
+	router.POST("/logout", middleware.RequireAuth, controllers.Logout)
 
 	//* OPEN ROUTES
 	router.GET("/user", controllers.GetAllUsers)
