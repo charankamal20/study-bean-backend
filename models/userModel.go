@@ -1,20 +1,21 @@
 package models
 
 import (
-	"time"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 // album represents data about a record album.
 type User struct {
 	ID           primitive.ObjectID `json:"id" bson:"_id"`
 	User_ID      string             `json:"user_id" bson:"user_id"`
-	About 		 string				`json:"about" bson:"about"`
+	About        string             `json:"about" bson:"about"`
 	Email        string             `json:"email" bson:"email"`
 	Password     string             `json:"password" bson:"password"`
 	Username     string             `json:"username" bson:"username"`
 	RefreshToken string             `json:"refresh_token" bson:"refresh_token"`
 	UpdatedAt    time.Time          `json:"updated_at" bson:"updated_at"`
+	Groups       []string           `json:"groups" bson:"groups"`
 }
 
 type Priority string
@@ -27,7 +28,7 @@ const (
 
 type Todo struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	Todo          string             `json:"todo" bson:"todo"`
+	TodoBody      string             `json:"todo_body" bson:"todo_body"`
 	IsCompleted   bool               `json:"isCompleted" bson:"isCompleted"`
 	DateCreated   time.Time          `json:"dateCreated" bson:"dateCreated"`
 	Priority      Priority           `json:"priority" bson:"priority"`

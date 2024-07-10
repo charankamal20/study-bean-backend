@@ -15,6 +15,7 @@ import (
 var UserCollection *mongo.Collection
 var GroupCollection *mongo.Collection
 var UserTodoCollection *mongo.Collection
+var GroupTodoCollection *mongo.Collection
 
 var MongoClient *mongo.Client
 
@@ -28,13 +29,13 @@ func ConnectToDB() {
 			"www.mongodb.com/docs/drivers/go/current/usage-examples/#environment-variable")
 	}
 
-  // Use the SetServerAPIOptions() method to set the version of the Stable API on the client
-  serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-  opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+	// Use the SetServerAPIOptions() method to set the version of the Stable API on the client
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 
-  // Create a new client and connect to the server
-  client, err := mongo.Connect(context.TODO(), opts)
-  MongoClient = client
+	// Create a new client and connect to the server
+	client, err := mongo.Connect(context.TODO(), opts)
+	MongoClient = client
 
 	if err != nil {
 		log.Println(err)
@@ -47,9 +48,10 @@ func ConnectToDB() {
 		return
 	}
 
-  UserCollection = client.Database("Users").Collection("user_data")
-  UserTodoCollection = client.Database("Users").Collection("user_todos")
-  GroupCollection = client.Database("Groups").Collection("group_data")
+	UserCollection = client.Database("Users").Collection("user_data")
+	UserTodoCollection = client.Database("Users").Collection("user_todos")
+	GroupCollection = client.Database("Groups").Collection("group_data")
+	GroupTodoCollection = client.Database("Groups").Collection("group_todos")
 
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 }

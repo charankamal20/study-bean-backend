@@ -5,7 +5,6 @@ import (
 	"os"
 	"study-bean/database"
 	"time"
-
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -21,11 +20,12 @@ func GenerateNewRefreshToken() (string, error) {
 	return refreshTokenString, err
 }
 
-func GenerateNewAuthToken(email string, user_id string) (string, error) {
+func GenerateNewAuthToken(email string, user_id string, username string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":   email,
 		"user_id": user_id,
+		"username": username,
 		"exp":     time.Now().Local().Add(time.Hour * 24).Unix(),
 	})
 
@@ -54,7 +54,7 @@ func UpdateAuthTokenFromRefreshToken(email string, oldRefreshToken string) (stri
 	//!TODO: Check if token is expired, in that case, prompt to login
 
 	// if yes then generate new token and return
-	authToken, err := GenerateNewAuthToken(email, user.User_ID)
+	authToken, err := GenerateNewAuthToken(email, user.User_ID, user.Username)
 	if err != nil {
 		return "", err
 	}

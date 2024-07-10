@@ -32,6 +32,7 @@ func GoogleAuthCallbackfunc(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	
 	jsonString := string(res)
 
 	c.JSON(http.StatusAccepted, gin.H{

@@ -9,13 +9,37 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func AddGroupInUser(guid string, user_id string) error {
+
+	filter := bson.M{"user_id": user_id}
+
+	update := bson.M{
+		"$addToSet": bson.M{
+			"groups": guid,
+		},
+		"$set": bson.M{"updated_at": time.Now()},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var result models.User
+	err := initializers.UserCollection.FindOneAndUpdate(ctx, filter, update).Decode(&result)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func FindUserByEmail(email string) (*models.User, error) {
 	// create a filter to search for the email
 	filter := bson.M{"email": email}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// retrieving the first document that matches the filter
@@ -34,7 +58,7 @@ func FindUserByEmail(email string) (*models.User, error) {
 func FindUserByUsername(username string) (*models.User, error) {
 	// create a filter to search for the username
 	filter := bson.M{"username": username}
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// retrieving the first document that matches the filter
@@ -53,7 +77,7 @@ func FindUserByUsername(username string) (*models.User, error) {
 func FindUserByUserID(userID string) (*models.User, error) {
 	// create a filter to search for the username
 	filter := bson.M{"user_id": userID}
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// retrieving the first document that matches the filter
@@ -71,7 +95,7 @@ func FindUserByUserID(userID string) (*models.User, error) {
 
 func AddUserToDatabase(user models.User) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// insert the bson object using InsertOne()
@@ -135,7 +159,7 @@ func FindAllUsers() ([]models.User, error) {
 
 func UpdateUserByKey[T any](_id primitive.ObjectID, key string, newValue T) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	_, err := initializers.UserCollection.UpdateByID(ctx, _id, bson.M{key: newValue})
@@ -144,4 +168,30 @@ func UpdateUserByKey[T any](_id primitive.ObjectID, key string, newValue T) erro
 	}
 
 	return nil
+}
+
+func CheckUserExistInGroup(user_id string, guid string) (*models.User, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	filter := bson.M{
+		"user_id": user_id,
+		"groups": bson.M{
+			"$elemMatch": bson.M{"$eq": guid},
+		},
+	}
+
+	var user models.User
+
+	err := initializers.UserCollection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// Handle the case when no documents match the filter
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }
