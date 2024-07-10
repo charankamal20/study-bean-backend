@@ -43,7 +43,7 @@ func AddTodo(c *gin.Context) {
 	// Create a new Todo item
 	newTodo := models.Todo{
 		ID:            primitive.NewObjectID(),
-		Todo:          body.Todo,
+		TodoBody:          body.Todo,
 		Priority:      body.Priority,
 		IsCompleted:   false,
 		DateCreated:   current_time,
@@ -122,7 +122,6 @@ func GetAllTodos(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	print("Here 0")
 	todos, err := database.GetUserTodos(user_id.(string))
 	if err != nil {
 		c.JSON(http.StatusNoContent, gin.H{

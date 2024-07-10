@@ -27,7 +27,7 @@ func GetAllUsers(context *gin.Context) {
 	users, err := database.FindAllUsers()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"success" : true,
+			"success": true,
 			"message": responses.DatabaseError,
 		})
 		return
@@ -35,7 +35,24 @@ func GetAllUsers(context *gin.Context) {
 
 	context.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":   users,
+		"data":    users,
+	})
+}
+
+func GetSingleUser(context *gin.Context) {
+	SingleUserIDParam := context.Param("userID")
+	user, err := database.FindUserByUserID(SingleUserIDParam)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"success": true,
+			"message": responses.DatabaseError,
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    user,
 	})
 }
 
@@ -60,7 +77,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.EmailTaken,
+			"message": responses.EmailTaken,
 		})
 		return
 	}
@@ -70,7 +87,7 @@ func SignUp(c *gin.Context) {
 	if user != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.UsernameTaken,
+			"message": responses.UsernameTaken,
 		})
 		return
 	}
@@ -103,12 +120,13 @@ func SignUp(c *gin.Context) {
 	newUser.User_ID = newUser.ID.Hex()
 	newUser.RefreshToken = refreshTokenString
 	newUser.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	newUser.Groups = []string{}
 
 	err = database.AddUserToDatabase(newUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.TryAgain,
+			"message": responses.TryAgain,
 		})
 		return
 	}
@@ -116,7 +134,7 @@ func SignUp(c *gin.Context) {
 	// Respond
 	c.JSON(http.StatusCreated, gin.H{
 		"success": true,
-		"user":    newUser,
+		"message": "Signed In successfully",
 	})
 }
 
@@ -138,7 +156,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.UserNotFound,
+			"message": responses.UserNotFound,
 		})
 		return
 	}
@@ -147,16 +165,16 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.InvalidCredentials,
+			"message": responses.InvalidCredentials,
 		})
 		return
 	}
 
-	tokenString, err := tokens.GenerateNewAuthToken(user.Email, user.User_ID)
+	tokenString, err := tokens.GenerateNewAuthToken(user.Email, user.User_ID, user.Username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.ErrorTokenCreation,
+			"message": responses.ErrorTokenCreation,
 		})
 		return
 	}
@@ -165,7 +183,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"message":   responses.ErrorRefreshTokenCreation,
+			"message": responses.ErrorRefreshTokenCreation,
 		})
 		return
 	}
@@ -179,13 +197,27 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	userRes := struct {
+		Username string   `json:"username"`
+		UserID   string   `json:"user_id"`
+		About    string   `json:"about"`
+		Email    string   `json:"email"`
+		Groups   []string `json:"groups"`
+	}{
+		Username: user.Username,
+		UserID:   user.User_ID,
+		About:    user.About,
+		Email:    user.Email,
+		Groups:   user.Groups,
+	}
+
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", "Bearer "+tokenString, 3600*24, "", "", true, true)
-	c.SetCookie("refresh_token", refreshTokenString, 3600*24*5, "", "", true, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": responses.LoginSuccessful,
+		"user":    userRes,
 	})
 }
 
@@ -202,5 +234,15 @@ func Validate(context *gin.Context) {
 		"success": true,
 		"message": "I'm Logged In",
 		"email":   email,
+	})
+}
+
+func Logout(c *gin.Context) {
+	// Remove the Authorization cookie
+	c.SetCookie("Authorization", "", -1, "", "", true, true)
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Logout successful",
 	})
 }

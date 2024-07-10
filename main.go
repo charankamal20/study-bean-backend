@@ -13,7 +13,6 @@ import (
 )
 
 func init() {
-	println("hello@kanishk")
 	initializers.LoadEnvVariables()
 	initializers.ConnectToDB()
 	initializers.NewAuth()
@@ -80,14 +79,26 @@ func main() {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
 
-	//* OPEN ROUTES
-    router.POST("/signup", controllers.SignUp)
-    router.POST("/login", controllers.Login)
-
+	//* AUTH ROUTES
+	router.POST("/signup", controllers.SignUp)
+	router.POST("/login", controllers.Login)
 	router.GET("/auth/:provider/callback", controllers.GoogleAuthCallbackfunc)
 	router.GET("/auth/:provider", controllers.OAuthProvider)
 	router.GET("/logout/:provider", controllers.OAuthLogout)
+	router.POST("/logout", middleware.RequireAuth, controllers.Logout)
+
+	//* OPEN ROUTES
 	router.GET("/user", controllers.GetAllUsers)
+	router.GET("/user/:userID", controllers.GetSingleUser)
+
+	//* GROUP ROUTES
+	router.POST("/group/user/add", middleware.RequireAuth, controllers.AddUserToGroup)
+	router.POST("/user/group", middleware.RequireAuth, controllers.CreateGroup)
+	router.POST("/group/:guid/todo", middleware.RequireAuth, controllers.AddGroupTodo)
+	// Requires id param
+	router.PUT("/group/:guid/todo", middleware.RequireAuth, controllers.UpdateGroupTodo)
+	router.PUT("/group/:guid/todo/toggle", middleware.RequireAuth, controllers.ToggleGroupTodo)
+	router.DELETE("/group/:guid/todo", middleware.RequireAuth, controllers.DeleteGroupTodo)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
