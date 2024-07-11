@@ -211,7 +211,7 @@ func Login(c *gin.Context) {
 		Groups:   user.Groups,
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("Authorization", "Bearer "+tokenString, 3600*24, "", "", true, true)
 
 	c.JSON(http.StatusOK, gin.H{
