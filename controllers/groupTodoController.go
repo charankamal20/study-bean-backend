@@ -77,7 +77,7 @@ func AddGroupTodo(c *gin.Context) {
 
 func UpdateGroupTodo(c *gin.Context) {
 	todoIDParam := c.Query("id")
-	todoID, err := primitive.ObjectIDFromHex(todoIDParam)
+	todoID, _ := primitive.ObjectIDFromHex(todoIDParam)
 	if todoIDParam == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
