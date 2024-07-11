@@ -52,7 +52,10 @@ func main() {
 	}()
 
 	router := gin.Default()
+	port := ":8080" // Specify the desired port number here
+	router.Run(port)
 	router.Use(CORSMiddleware())
+
 	// router.Use(cors.New(cors.Config{
 	// 	AllowOrigins:     []string{"http://localhost:3000"},
 	// 	AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH", "HEAD"},
@@ -73,6 +76,7 @@ func main() {
 	// 	},
 	// 	MaxAge: 12 * time.Hour,
 	// }))
+	
 	htmlFormat := `<html><body>%v</body></html>`
 	router.GET("/", func(c *gin.Context) {
 		html := fmt.Sprintf(htmlFormat, `<a href="/auth/google">Login through Google</a> <a href="/auth/github">Login through Github</a> <a href="/auth/discord">Login through Discord</a>`)
