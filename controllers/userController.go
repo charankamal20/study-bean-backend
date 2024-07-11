@@ -212,7 +212,7 @@ func Login(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("Authorization", "Bearer "+tokenString, 3600*24, "/", ".classikh.me", true, true)
+	c.SetCookie("Authorization", "Bearer "+tokenString, 3600*24, "", "www.studybean.classikh.me", false, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
