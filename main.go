@@ -82,7 +82,7 @@ func main() {
 
 	htmlFormat := `<html><body>%v</body></html>`
 	router.GET("/", func(c *gin.Context) {
-		html := fmt.Sprintf(htmlFormat, `<a href="/auth/google">Login through Google</a> <a href="/auth/github">Login through Github</a> <a href="/auth/discord">Login through Discord</a>`)
+		html := fmt.Sprintf(htmlFormat, `Hello World <a href="/auth/google">Login through Google</a> <a href="/auth/github">Login through Github</a> <a href="/auth/discord">Login through Discord</a>`)
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
 
