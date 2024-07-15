@@ -9,7 +9,6 @@ import (
 	"study-bean/initializers"
 	"study-bean/middleware"
 	"time"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +27,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(204)
 			return
 		}
-
+// Test comment
 		c.Next()
 	}
 }
