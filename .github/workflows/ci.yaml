@@ -18,6 +18,7 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run:
         echo "$SSH_PRIVATE_KEY" > keyfile
+        echo "Hello"
         cat keyfile
         chmod 600 keyfile
         mkdir -p ~/.ssh
