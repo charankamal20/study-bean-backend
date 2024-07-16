@@ -107,6 +107,11 @@ func main() {
 	router.PUT("/group/:guid/todo/toggle", middleware.RequireAuth, controllers.ToggleGroupTodo)
 	router.DELETE("/group/:guid/todo", middleware.RequireAuth, controllers.DeleteGroupTodo)
 
+	//* SESSION ROUTES
+	router.POST("/session/new", controllers.CreateNewSession)
+	router.POST("/session/join", controllers.JoinSession)
+	router.POST("/session/todo", middleware.SessionMiddleware, controllers.CreateSessionTodo)
+
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)
 
