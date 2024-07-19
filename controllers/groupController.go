@@ -57,8 +57,6 @@ func CreateGroup(c *gin.Context) {
 	newGroup.Banned = []string{}
 	newGroup.GroupID = newGroup.ID.Hex()
 
-	fmt.Println("NEW GROUP", newGroup)
-
 	var wg sync.WaitGroup
 	errChan := make(chan error, 2)
 

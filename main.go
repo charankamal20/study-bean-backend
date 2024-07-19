@@ -8,7 +8,8 @@ import (
 	"study-bean/controllers"
 	"study-bean/initializers"
 	"study-bean/middleware"
-
+	"time"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,27 +20,14 @@ func init() {
 }
 
 func CORSMiddleware() gin.HandlerFunc {
-
-	var origin string
-	env := os.Getenv("ENVIRONMENT")
-
-	if env == "PRODUCTION" {
-		origin = "https://studybean.classikh.me"
-	} else {
-		origin = "http://localhost:3000"
-	}
-
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-
+		fmt.Println("HELLO")
+		fmt.Println("METHOD: ", c.Request.Method)
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-
+// Test comment
 		c.Next()
 	}
 }
@@ -51,8 +39,26 @@ func main() {
 		}
 	}()
 
+	var origin string
+	env := os.Getenv("ENVIRONMENT")
+
+	if env == "PRODUCTION" {
+		origin = "https://studybean.classikh.me"
+	} else {
+		origin = "http://localhost:3000"
+	}
+
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{origin},
+        AllowMethods:     []string{"POST, OPTIONS, GET, PUT, DELETE"},
+        AllowHeaders:     []string{"Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, Set-Cookie"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge: 24 * time.Hour,
+    }))
 	router.Use(CORSMiddleware())
+
 	// router.Use(cors.New(cors.Config{
 	// 	AllowOrigins:     []string{"http://localhost:3000"},
 	// 	AllowMethods:     []string{"PUT", "GET", "POST", "DELETE", "OPTIONS", "PATCH", "HEAD"},
@@ -73,9 +79,10 @@ func main() {
 	// 	},
 	// 	MaxAge: 12 * time.Hour,
 	// }))
+
 	htmlFormat := `<html><body>%v</body></html>`
 	router.GET("/", func(c *gin.Context) {
-		html := fmt.Sprintf(htmlFormat, `<a href="/auth/google">Login through Google</a> <a href="/auth/github">Login through Github</a> <a href="/auth/discord">Login through Discord</a>`)
+		html := fmt.Sprintf(htmlFormat, `Hello World with new ENVIRONMENT <a href="/auth/google">Login through Google</a> <a href="/auth/github">Login through Github</a> <a href="/auth/discord">Login through Discord</a>`)
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
 
@@ -99,6 +106,11 @@ func main() {
 	router.PUT("/group/:guid/todo", middleware.RequireAuth, controllers.UpdateGroupTodo)
 	router.PUT("/group/:guid/todo/toggle", middleware.RequireAuth, controllers.ToggleGroupTodo)
 	router.DELETE("/group/:guid/todo", middleware.RequireAuth, controllers.DeleteGroupTodo)
+
+	//* SESSION ROUTES
+	router.POST("/session/new", controllers.CreateNewSession)
+	router.POST("/session/join", controllers.JoinSession)
+	router.POST("/session/todo", middleware.SessionMiddleware, controllers.CreateSessionTodo)
 
 	//* TEST ROUTES
 	router.GET("/validate", middleware.RequireAuth, controllers.Validate)

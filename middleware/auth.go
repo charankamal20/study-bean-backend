@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"study-bean/responses"
 	"study-bean/tokens"
 	"time"
 
@@ -72,6 +73,53 @@ func RequireAuth(context *gin.Context) {
 
 	context.Set("email", claims["email"])
 	context.Set("user_id", claims["user_id"])
+
+	context.Next()
+}
+
+func SessionMiddleware(context *gin.Context) {
+	// Get Cookie
+	session_cookie, err := context.Cookie("Session")
+	if err != nil {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	tokenString := strings.Split(session_cookie, " ")[1]
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(os.Getenv("JWT_KEY")), nil
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims)
+
+	expirationTime, ok := claims["exp"].(float64)
+	if !ok {
+		context.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	expirationTimeInt := int64(expirationTime)
+
+	currentTime := time.Now().Unix()
+
+	if currentTime > expirationTimeInt {
+		context.JSON(http.StatusNotFound, responses.SessionExpired)
+	}
+
+	context.Set("session_id", claims["session_id"])
 
 	context.Next()
 }

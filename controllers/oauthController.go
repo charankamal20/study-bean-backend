@@ -32,7 +32,7 @@ func GoogleAuthCallbackfunc(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	
+
 	jsonString := string(res)
 
 	c.JSON(http.StatusAccepted, gin.H{
@@ -72,7 +72,7 @@ func OAuthProvider(c *gin.Context) {
 	provider := c.Param("provider")
 	fmt.Println("provider", provider)
 
-	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "provider", provider))
+	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(),"provider", provider))
 
 	// try to get the user without re-authenticating
 	if gothUser, err := gothic.CompleteUserAuth(c.Writer, c.Request); err == nil {
