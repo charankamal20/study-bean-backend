@@ -38,7 +38,7 @@ func UpdateTodo(todo_id primitive.ObjectID, priority models.Priority, todo, user
 	filter := bson.M{"user_ref_id": user_id, "todos._id": todo_id}
 	update := bson.M{
 		"$set": bson.M{
-			"todos.$.todo":     todo,
+			"todos.$.todo_body":     todo,
 			"todos.$.priority": priority,
 		},
 	}
